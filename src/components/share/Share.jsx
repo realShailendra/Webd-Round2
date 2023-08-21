@@ -1,7 +1,35 @@
+import React, { useState, useEffect } from 'react';
 import "./share.css";
-import {PermMedia, Label,Room, EmojiEmotions} from "@material-ui/icons"
+import { PermMedia, Label, Room, EmojiEmotions } from "@material-ui/icons";
 
 export default function Share() {
+  const [inputText, setInputText] = useState("");
+  const [posts, setPosts] = useState([]);
+
+  // Load posts from local storage on initial render
+  useEffect(() => {
+    const savedPosts = localStorage.getItem("sharedPosts");
+    if (savedPosts) {
+      setPosts(JSON.parse(savedPosts));
+    }
+  }, []);
+
+  // Update local storage whenever posts change
+  useEffect(() => {
+    localStorage.setItem("sharedPosts", JSON.stringify(posts));
+  }, [posts]);
+
+  const handleShare = () => {
+    if (inputText.trim() !== "") {
+      const newPost = {
+        text: inputText,
+        timestamp: Date.now()
+      };
+      setPosts([newPost, ...posts]);
+      setInputText("");
+    }
+  };
+
   return (
     <div className="share">
       <div className="shareWrapper">
@@ -10,12 +38,14 @@ export default function Share() {
           <input
             placeholder="What's in your mind Rahul?"
             className="shareInput"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
           />
         </div>
-        <hr className="shareHr"/>
+        <hr className="shareHr" />
         <div className="shareBottom">
-            <div className="shareOptions">
-                <div className="shareOption">
+          <div className="shareOptions">
+          <div className="shareOption">
                     <PermMedia htmlColor="tomato" className="shareIcon"/>
                     <span className="shareOptionText">Photo or Video</span>
                 </div>
@@ -31,10 +61,22 @@ export default function Share() {
                     <EmojiEmotions htmlColor="goldenrod" className="shareIcon"/>
                     <span className="shareOptionText">Feelings</span>
                 </div>
-            </div>
-            <button className="shareButton">Share</button>
+          </div>
+          <button className="shareButton" onClick={handleShare}>Share</button>
         </div>
+      </div>
+      
+      {/* Display shared posts */}
+      <div className="sharedPosts">
+        {posts.map((post, index) => (
+          <div className="post" key={index}>
+            <p>{post.text}</p>
+            <p>{new Date(post.timestamp).toLocaleString()}</p>
+          </div>
+        ))}
       </div>
     </div>
   );
 }
+
+
